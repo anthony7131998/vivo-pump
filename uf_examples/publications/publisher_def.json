@@ -20,12 +20,12 @@
         "type": [
             {
                 "predicate": {
-                    "single": false, 
+                    "single": false,
                     "include": [
-                        "thing", 
-                        "agent", 
+                        "thing",
+                        "agent",
                         "org"
-                    ], 
+                    ],
                     "ref": "rdf:type"
                 }, 
                 "object": {

@@ -34,14 +34,14 @@ data_out = {}
 # get dictionary of publisher uri keyed by simplified  name
 vivo_publishers = get_vivo_publishers(parms)
 print_err('total VIVO publishers: {}'.format(len(vivo_publishers)))
-# print_err(vivo_publishers)
 
 row_out = 0
 
 for row, data in data_in.items():
+
     if 0 == row_out:
         # copy the header line so we don't end up with an empty file
-        data_out[row_out] = data
+        data_out[row_out] = dict((data_in_keys,'') for data_in_keys in data)
         row_out += 1
         continue
 
@@ -49,7 +49,9 @@ for row, data in data_in.items():
 
     if key not in vivo_publishers:
         # name is not vivo.  These are the ones to add
+        print_err("key not found")
         data_out[row_out] = data
+        data_out[row_out]['name'] = data['name'].title()
         row_out += 1
         print_err("key {} will be added to vivo: {}".format(key, data))
 

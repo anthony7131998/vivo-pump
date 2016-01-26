@@ -1227,3 +1227,53 @@ def create_enum(filename, query, parms, trim=0, skip=0):
         else:
             outfile.write(item["short"]["value"][skip:-trim] + "\t" + item["vivo"]["value"] + "\n")
     outfile.close()
+
+
+def get_vivo_inverse_property(forward_property, parms):
+    """
+    TODO: document me
+    """
+    inverse_property = ''
+
+    query = """
+    select ?inverse_property
+    where {
+        <{{forward_property}}> owl:inverseOf ?inverse_property
+    }
+    """
+
+    q = query.replace("{{forward_property}}",forward_property)
+    a = vivo_query(q,parms)
+    inverse_property = [x['inverse_property']['value'] for x in a['results']['bindings']]
+
+    if len(inverse_property) > 0:
+        return inverse_property[0].encode()
+
+    return None
+
+
+def make_inverse_subs(sub_file, parms):
+    """
+
+    :param sub_file: sub.rdf file to generate inverse properties so that all data is removed
+    :param parms: parms used for sparql queries
+    :return: updated subfile with inverse properties
+    """
+
+    file_out = open(sub_file + '.inverse', "w")
+
+    logger.debug("the sube file is: {}".format(sub_file))
+
+    #with open(sub_file,'rw') as input_file:
+        # data = input_file.read()
+    sub_graph = rdflib.Graph()
+    sub_file_data = sub_graph.parse(sub_file,format='nt')
+
+    for s,p,o in sub_file_data:
+        try:
+            inverse_property = rdflib.URIRef((get_vivo_inverse_property(p,parms)))
+            sub_file_data.add((o,rdflib.URIRef(inverse_property),s))
+        except TypeError:
+            continue
+
+    file_out.write(sub_file_data.serialize(format='nt'))

@@ -208,8 +208,9 @@ class Pump(object):
 
         new_update_columns = {}
         for name, path in self.update_def['column_defs'].items():
-            if name in self.update_data[self.update_data.keys()[0]].keys():
+            if len(self.update_data) > 0 and name in self.update_data[self.update_data.keys()[0]].keys():
                 new_update_columns[name] = path
+
         self.update_def['column_defs'] = new_update_columns
 
         if self.original_graph is None:  # Test for injection
@@ -387,8 +388,18 @@ class Pump(object):
         for row, data_update in self.update_data.items():
 
             # Create a URI if empty
+            logger.debug("data_update[uri] = {}".format(data_update['uri']))
 
             if data_update['uri'].strip() == '':
+                dict_is_empty = True
+
+                for item in data_update.values():
+                    if len(item) != 0:
+                        dict_is_empty = False
+
+                if dict_is_empty:
+                    # skip blank lines in the input file
+                    continue
 
                 #   If the source uri is empty, create one.  Remaining processing is unchanged.
                 #   Since the new uri does not have triples for the columns in the spreadsheet, each will be added
@@ -447,15 +458,18 @@ class Pump(object):
                     logger.debug(u"Skipping blank value. row {} column {}".format(row, column_name))
                     continue
 
-                if len(column_def) > 3:
+                column_def_len = len(column_def)
+                logger.debug("column_def length is: {}".format(column_def_len))
+
+                if column_def_len > 3:
                     raise PathLengthException(
-                        "ERROR: Path lengths > 3 not supported.  Path length for " + column_name + " is " + str(
-                            len(column_def)))
-                elif len(column_def) == 3:
+                        "ERROR: Path lengths > 3 not supported.  Path length for {} is {}"
+                        .format(column_name, column_def_len))
+                elif column_def_len == 3:
                     self.__do_three_step_update(row, column_name, uri, column_def, data_update)
-                elif len(column_def) == 2:
+                elif column_def_len == 2:
                     self.__do_two_step_update(row, column_name, uri, column_def, data_update)
-                elif len(column_def) == 1:
+                elif column_def_len == 1:
                     step_def = column_def[0]
                     vivo_objs = {unicode(o): o for s, p, o in
                                  get_step_triples(self.update_graph, uri, step_def, self.query_parms)}
