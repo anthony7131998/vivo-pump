@@ -36,17 +36,18 @@ __version__ = "0.8.7"
 #   and a third parameter's value might come from the config file, overwriting the program default and left unspecified
 #   on the command line
 
+import sys
+from datetime import datetime
+from pump.vivopump import get_args, DefNotFoundException, InvalidDefException
+from pump.pump import Pump
+from pump.vivopump import make_inverse_subs
+
 
 def main():
     """
     The main function.  Does the work of Simple VIVO
     :return: None
     """
-    import sys
-    from datetime import datetime
-    from pump.vivopump import get_args, DefNotFoundException, InvalidDefException
-    from pump.pump import Pump
-
     return_code = 0
     print datetime.now(), "Start"
     args = get_args()
@@ -76,6 +77,7 @@ def main():
         n_rows = p.get()
         print datetime.now(), n_rows, "rows in", args.src
     elif args.action == 'update':
+
         try:
             [add_graph, sub_graph] = p.update()
         except IOError:
@@ -88,6 +90,7 @@ def main():
             sub_file = open(args.rdfprefix + '_sub.rdf', 'w')
             print >>sub_file, sub_graph.serialize(format='nt')
             sub_file.close()
+            make_inverse_subs(args.rdfprefix + '_sub.rdf', p.query_parms)
             print datetime.now(), len(add_graph), 'triples to add', len(sub_graph), 'triples to sub'
     elif args.action == 'summarize':
         print p.summarize()

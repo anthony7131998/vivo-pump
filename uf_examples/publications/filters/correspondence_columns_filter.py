@@ -29,10 +29,9 @@ __copyright__ = "Copyright 2015 (c) Michael Conlon"
 __license__ = "New BSD License"
 __version__ = "0.01"
 
+from utils import print_err
+from vivopump import read_csv_fp, write_csv_fp, improve_display_name, improve_title
 import sys
-
-from disambiguate.utils import print_err
-from pump.vivopump import read_csv_fp, write_csv_fp, improve_display_name
 
 
 def parse_author_data(author_data, affiliation_data, max_list_length=50):
@@ -50,7 +49,7 @@ def parse_author_data(author_data, affiliation_data, max_list_length=50):
     :return: author_list.  A list of authors. Each author is a dict with seven
     elements.
     """
-    from pump.vivopump import replace_initials
+    from vivopump import replace_initials
     author_list = []
     author_names = author_data.split(' and ')
     list_length = 0
@@ -130,7 +129,7 @@ def parse_author_data(author_data, affiliation_data, max_list_length=50):
         else:
             affiliation['uf'] = 'false'
     affiliations.append(affiliation)
-    # print_err(affiliations)
+    print_err(affiliations)
 
     # Now we are ready to look for affiliations by name.  Messy business.
     for author_dict in author_list:
@@ -147,7 +146,7 @@ def parse_author_data(author_data, affiliation_data, max_list_length=50):
                 # the default affiliation is uf false
                 continue
 
-    #print_err("{} Authors in list: {}".format(len(author_list), author_list))
+    print_err("{} Authors in list: {}".format(len(author_list), author_list))
     return author_list
 
 data_in = read_csv_fp(sys.stdin)
@@ -158,8 +157,7 @@ print_err("==> {} columns in the input: {} "
 
 data_out = {}
 row_out = 0
-keep_names = set(['remove', 'uri', 'display_name', 'suffix', 'first', 'last',
-                  'middle', 'corresponding', 'uf'])
+keep_names = set(['remove', 'display_name','corresponding', 'title'])
 
 for row, data in data_in.items():
     new_data = dict(data)
@@ -168,14 +166,9 @@ for row, data in data_in.items():
 
     # Add these columns
     new_data['remove'] = ''
-    new_data['uri'] = ''
     new_data['display_name'] = ''
-    new_data['first'] = ''
-    new_data['last'] = ''
-    new_data['middle'] = ''
-    new_data['suffix'] = ''
     new_data['corresponding'] = ''
-    new_data['uf'] = ''
+    new_data['title'] = improve_title(new_data['title'])
 
     # Delete everything not in the keep_names set
     for name in new_data.keys():
