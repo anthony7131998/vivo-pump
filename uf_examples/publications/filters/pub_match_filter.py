@@ -21,11 +21,10 @@ __copyright__ = "Copyright 2015 (c) Michael Conlon"
 __license__ = "New BSD License"
 __version__ = "0.01"
 
+from vivopump import read_csv_fp, write_csv_fp, get_parms, vivo_query, get_vivo_journals
 import sys
-
-from pump.vivopump import read_csv_fp, write_csv_fp, get_parms, vivo_query
-from disambiguate.utils import print_err
-
+import utils
+import time
 
 def get_vivo_academic_articles(parms):
     """
@@ -51,17 +50,31 @@ def get_vivo_academic_articles(parms):
     return dict(zip(doi_list, uri_list))
 
 parms = get_parms()
+date = time.strftime("%Y_%m_%d")
 data_in = read_csv_fp(sys.stdin)
-print_err("{} rows in the input".format(len(data_in)))
+utils.print_err("{} rows in the input".format(len(data_in)))
 
 data_out = {}
 # get dictionary of pub uri keyed by doi
 vivo_pubs = get_vivo_academic_articles(parms)
 
-print_err('{} publications found in VIVO'.format(len(vivo_pubs)))
+
+pubs_missing_doi_file = open('data_out/pubs_missing_doi_'+date+'.txt', 'w+')
+pubs_missing_doi_dict = {}
+
+vivo_journals = get_vivo_journals(parms)
+
+utils.print_err('{} publications found in VIVO'.format(len(vivo_pubs)))
 # print >>sys.stderr, vivo_pubs
 
 for row, data in data_in.items():
+
+
+    if (data['doi'] == ''):
+        utils.print_err('Pub missing DOI')
+        pubs_missing_doi_dict[row]= data
+        continue
+
     data_out[row] = data
 
     # name is not vivo.  These are the ones to add
@@ -70,5 +83,22 @@ for row, data in data_in.items():
     else:
         data_out[row]['uri'] = vivo_pubs[data['doi']]
 
-print_err('{} rows in the output'.format(len(data_out)))
+    try:
+        if len(vivo_journals.get(data['issn'])) > 0:
+            issn_uri = vivo_journals.get(data['issn'])
+        else:
+            utils.print_err("\nISSN not found: {}\n".format(data['issn']))
+            issn_uri = ''
+    except TypeError:
+        continue
+
+    data_out[row]['journal'] = issn_uri
+    data_out[row].pop('issn')
+
+
+
+
+write_csv_fp(pubs_missing_doi_file,pubs_missing_doi_dict)
+
+utils.print_err('{} rows in the output'.format(len(data_out)))
 write_csv_fp(sys.stdout, data_out)

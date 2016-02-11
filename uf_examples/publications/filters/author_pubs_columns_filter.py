@@ -1,37 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """
-    author_prep_filter.py -- add needed columns, remove unused columns.  This
-    filter is more sophisticated than most:
-
-    It handles the affiliation parsing, identifying corresponding author and UF
-    authors. It transposes the data from publication records to author records.
-    It handles the disambiguation of UF authors.
-
-    Input
-
-    title1  affil string 1  author names string 1
-    title2  affil string 2  author names string 2
-
-    Output
-
-    title1  author1 corresponding1  uf1
-    title1  author2 corresponding2  uf2
-    title1  author3 corresponding3  uf3
-    title2  author1 corresponding1  uf1 (author 1 of the second paper)
-    title2  author2 corresponding2  uf2
-
-    etc.
+pub_columns_filter.py -- add needed columns, remove unused columns
 """
 
-__author__ = "Michael Conlon"
-__copyright__ = "Copyright 2015 (c) Michael Conlon"
+__author__ = "Alex Loiacono"
+__copyright__ = "Copyright 2016 (c) Alex Loiacono"
 __license__ = "New BSD License"
 __version__ = "0.01"
 
-from utils import print_err
-from vivopump import read_csv_fp, write_csv_fp, improve_display_name
+from vivopump import read_csv_fp, write_csv_fp
+from vivopump import improve_title, parse_pages, parse_date_parts, improve_type, improve_display_name
 import sys
+import utils
 
 
 def parse_author_data(author_data, affiliation_data, max_list_length=50):
@@ -92,6 +74,8 @@ def parse_author_data(author_data, affiliation_data, max_list_length=50):
             author_dict['middle'] = ''
         author_list.append(author_dict)
 
+    #utils.print_err("author_list \n{}".format(author_list))
+
     # If there is only one author, they must be UF and Corresponding
     if len(author_list) == 1:
         author_list[0]['corresponding'] = 'true'
@@ -119,17 +103,24 @@ def parse_author_data(author_data, affiliation_data, max_list_length=50):
     affiliation_data = replace_initials(affiliation_data)
 
     # Now periods demarc the groups of authors with like affiliation
+    utils.print_err("\naffiliation_data \n{}\n".format(affiliation_data))
     affiliation_list = affiliation_data.split('.')
     affiliations = []
+
+    utils.print_err("affiliation_list - \n{}\n".format(affiliation_list))
 
     for affiliation_string in affiliation_list:
         affiliation = {'affiliation_string': affiliation_string}
         if 'Univ Florida' in affiliation_string:
             affiliation['uf'] = 'true'
+            utils.print_err("affiliation_dict \n{} - true".format(affiliation))
+            affiliations.append(affiliation)
         else:
             affiliation['uf'] = 'false'
-    affiliations.append(affiliation)
-    # print_err(affiliations)
+            utils.print_err("affiliation_dict \n{} - false".format(affiliation))
+            affiliations.append(affiliation)
+    #affiliations.append(affiliation)
+    utils.print_err("affiliations \n{}".format(affiliations))
 
     # Now we are ready to look for affiliations by name.  Messy business.
     for author_dict in author_list:
@@ -149,24 +140,30 @@ def parse_author_data(author_data, affiliation_data, max_list_length=50):
     #print_err("{} Authors in list: {}".format(len(author_list), author_list))
     return author_list
 
-data_in = read_csv_fp(sys.stdin)
 
+data_in = read_csv_fp(sys.stdin)
 column_names = data_in[1].keys()
-print_err("==> {} columns in the input: {} "
+
+utils.print_err("==> {} columns in the input: {} "
           .format(len(column_names), column_names))
 
 data_out = {}
 row_out = 0
-keep_names = set(['remove', 'uri', 'display_name', 'suffix', 'first', 'last',
+
+keep_names = set(['remove', 'pub_uri', 'author', 'doi', 'affiliation',
+                  'uri', 'display_name', 'suffix', 'first', 'last',
                   'middle', 'corresponding', 'uf'])
+
 
 for row, data in data_in.items():
     new_data = dict(data)
+
     author_data = parse_author_data(new_data['author'],
                                     new_data['affiliation'])
 
     # Add these columns
     new_data['remove'] = ''
+    new_data['pub_uri'] = ''
     new_data['uri'] = ''
     new_data['display_name'] = ''
     new_data['first'] = ''
@@ -176,7 +173,6 @@ for row, data in data_in.items():
     new_data['corresponding'] = ''
     new_data['uf'] = ''
 
-    # Delete everything not in the keep_names set
     for name in new_data.keys():
         if name not in keep_names:
             del new_data[name]
@@ -191,6 +187,4 @@ for row, data in data_in.items():
                 data_out[row_out][key] = improve_display_name(author[key])
 
 column_names_out = data_out[1].keys()
-print_err("==> {} columns in the output: {}"
-          .format(len(column_names_out), column_names_out))
 write_csv_fp(sys.stdout, data_out)

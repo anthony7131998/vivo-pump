@@ -25,6 +25,9 @@ There are two cases:
     effort to assign these potentially by half.  If exactly one match occurs,
     the match is made, the URI provided in the update data.
 
+
+NOTE: Add checking so that if a pub is missing a ISSN output DOI of publication for manual inspection
+
 """
 
 __author__ = "Alex Loiacono and Nicholas Rejack"
@@ -83,7 +86,7 @@ def get_author_name_parts(author_data, max_list_length=50):
     utils.print_err("{} Authors in list: {}".format(len(author_list), author_list))
     return author_list
 
-def get_author_uris(author_row_data):
+def get_author_uris(author_row_data,title,disamb_dict,paper_uri):
 
     author_list_out = []
 
@@ -108,8 +111,9 @@ def get_author_uris(author_row_data):
         if count == 1:
             author_list_builder = author_uris[0]
         else:
-            author_list_builder = ''
+            author_list_builder = author_uris[0]
             utils.print_err("Disamb: {}".format(author_uris))
+            disamb_dict.append("Paper: {} -- at {}\n{} : \n{} \n\n".format(title, paper_uri, author['display_name'], author_uris))
 
         if len(author_list_out) == 0:
             author_list_out = author_list_builder
@@ -151,6 +155,12 @@ def get_author_affiliation(affiliation_row_data):
 
 parms = get_parms()
 
+# Create file to hold disambiguation data
+
+disamb_file = open('disambiguation.txt', 'w+')
+
+disamb_dict = []
+
 # Piped in file
 data_in = read_csv_fp(sys.stdin)
 print >>sys.stderr, len(data_in)
@@ -158,7 +168,7 @@ print >>sys.stderr, len(data_in)
 # file_name = '/Users/asura/git/vivo-pump/author_list.csv'
 # @TODO: pass file name path as a command line parameter
 file_name = 'vivo_author_list.csv'
-utils.print_err("Using static disambiguation file: {}".format(file_name))
+#utils.print_err("Using static disambiguation file: {}".format(file_name))
 
 vivo_journals = get_vivo_journals(parms)
 
@@ -176,7 +186,7 @@ for row_index, row_data in data_in.items():
 
     utils.print_err("\nrow_data is: \n{}".format(row_data))
 
-    data_out['author'] = get_author_uris(row_data['author'])
+    data_out['author'] = get_author_uris(row_data['author'],row_data['title'],disamb_dict,row_data['uri'])
     data_out['affiliation'] = get_author_affiliation(row_data['affiliation'])
 
     try:
@@ -200,5 +210,10 @@ for row_index, row_data in data_in.items():
     data_in[row_index]['affiliation'] = data_out['affiliation']
     data_in[row_index]['journal'] = issn_uri
     data_in[row_index].pop('issn')
+
+for line in disamb_dict:
+    disamb_file.write(line)
+
+disamb_file.close()
 
 write_csv_fp(sys.stdout, data_in)
