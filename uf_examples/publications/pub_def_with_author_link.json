@@ -43,7 +43,7 @@
             {
                 "predicate": {
                     "single": true,
-                    "ref": "bibo:pageEnd"
+                    "ref": "bibo:endPage"
                 },
                 "object": {
                     "literal": true
@@ -91,6 +91,37 @@
                 },
                 "object": {
                     "literal": true
+                }
+            }
+        ],
+        "author": [
+            {
+                "predicate": {
+                    "single": false,
+                    "ref": "vivo:relatedBy"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vivo:Authorship",
+                    "name": "paperAuthroship"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vivo:Authorship"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vivo:relates",
+                    "name": "relatingAuthor"
+                },
+                "predicate": {
+                    "single": true,
+                    "ref": "vivo:relates"
+                },
+                "object": {
+                    "literal": false
                 }
             }
         ],

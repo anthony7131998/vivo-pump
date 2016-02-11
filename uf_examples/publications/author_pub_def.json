@@ -1,0 +1,203 @@
+{
+    "entity_def": {
+        "order_by": "name", 
+        "entity_sparql": "?uri a foaf:Person .",
+        "type": "foaf:Person"
+    }, 
+    "column_defs": {
+        "uri": [
+        ],
+        "remove": [
+        ],
+        "display_name": [
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "rdfs:label"
+                },
+                "object": {
+                    "literal": true
+                }
+            }
+        ],
+        "first": [
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "obo:ARG_2000028"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Individual",
+                    "name": "vcard"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vcard:hasName"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Name",
+                    "name": "vcardname"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vcard:givenName"
+                },
+                "object": {
+                    "literal": true
+                }
+            }
+        ],
+        "middle": [
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "obo:ARG_2000028"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Individual",
+                    "name": "vcard"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vcard:hasName"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Name",
+                    "name": "vcardname"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vivo:middleName"
+                },
+                "object": {
+                    "literal": true
+                }
+            }
+        ],
+        "last": [
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "obo:ARG_2000028"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Individual",
+                    "name": "vcard"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vcard:hasName"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Name",
+                    "name": "vcardname"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vcard:familyName"
+                },
+                "object": {
+                    "literal": true
+                }
+            }
+        ],
+        "suffix": [
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "obo:ARG_2000028"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Individual",
+                    "name": "vcard"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vcard:hasName"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vcard:Name",
+                    "name": "vcardname"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vcard:honorificSuffix"
+                },
+                "object": {
+                    "literal": true
+                }
+            }
+        ],
+        "uf": [
+            {
+                "predicate": {
+                    "single": false,
+                    "include": [
+                        "person"
+                    ],
+                    "ref": "rdf:type"
+                },
+                "object": {
+                    "literal": false,
+                    "enum": "author_types.txt"
+                }
+            }
+        ],
+        "pub_uri": [
+            {
+                "predicate": {
+                    "single": false,
+                    "ref": "vivo:relatedBy"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vivo:Authorship",
+                    "name": "paperAuthroship"
+                }
+            },
+            {
+                "predicate": {
+                    "single": true,
+                    "ref": "vivo:Authorship"
+                },
+                "object": {
+                    "literal": false,
+                    "type": "vivo:relates",
+                    "name": "relatingPublication"
+                },
+                "predicate": {
+                    "single": true,
+                    "ref": "vivo:relates"
+                },
+                "object": {
+                    "literal": false
+
+                }
+            }
+        ]
+    }
+}
